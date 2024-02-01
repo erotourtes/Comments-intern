@@ -8,3 +8,18 @@ Content-Type: application/json
 }
 
 ###
+
+GET http://localhost:3000/users/1
+
+###
+
+PATCH http://localhost:3000/users/1
+Content-Type: application/json
+
+{
+    "email": "jhon1@gmail.com"
+}
+
+###
+
+DELETE http://localhost:3000/users/1
