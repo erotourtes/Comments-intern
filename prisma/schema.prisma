@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  username String  @unique
+  name     String?
+  password String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  posts Post[]
+}
+
+model Post {
+  id      Int    @id @default(autoincrement())
+  title   String
+  content String @db.Text
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  author   User @relation(fields: [authorId], references: [id])
+  authorId Int
+
+  parentPostId Int?
+  parentPost   Post?  @relation("ChildPosts", fields: [parentPostId], references: [id])
+  comments     Post[] @relation("ChildPosts")
+
+  attachments Attachment[]
+}
+
+model Attachment {
+  id Int @id @default(autoincrement())
+
+  url    String
+  size   Int    @db.SmallInt
+  format String @db.VarChar(10)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  post   Post @relation(fields: [postId], references: [id])
+  postId Int
+}
