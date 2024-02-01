@@ -1,26 +1,18 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserAlreadyExists, UserNotFound } from './exceptions/UserExceptions';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto) {
-    const isExist = this.findByEmail(createUserDto.email);
-    if (isExist) throw new UserAlreadyExists();
+    const user = await this.prisma.user.create({
+      data: createUserDto,
+    });
 
-    try {
-      const user = await this.prisma.user.create({
-        data: createUserDto,
-      });
-
-      return user;
-    } catch (error) {
-      throw new BadRequestException();
-    }
+    return user;
   }
 
   async findOne(id: number) {
@@ -40,9 +32,6 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const isExist = await this.findOne(id);
-    if (!isExist) throw new UserNotFound(id);
-
     const user = await this.prisma.user.update({
       where: { id },
       data: updateUserDto,
@@ -52,10 +41,7 @@ export class UsersService {
   }
 
   async remove(id: number) {
-    const isExist = await this.findOne(id);
-    if (!isExist) throw new UserNotFound(id);
-
-    this.prisma.user.delete({
+    await this.prisma.user.delete({
       where: { id },
     });
   }
