@@ -31,7 +31,7 @@ export class PrismaExceptionFilter<
     const errorMessage = errorMessageProvider(exception);
 
     response.status(400).json({
-      error: errorMessage,
+      error: `Database error: ${errorMessage}`,
       timestamp: new Date().toISOString(),
       path: request.url,
     });
