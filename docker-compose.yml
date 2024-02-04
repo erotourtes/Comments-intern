@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  database:
+    build:
+      context: ./database # Path to the frontend code
+      dockerfile: Dockerfile
+    environment:
+      # TODO: remove this root password
+      MYSQL_ROOT_PASSWORD: 6NgQc6f57rKkuhyb
+      MYSQL_DATABASE: comments
+    ports:
+      - "3306:3306"
+
+  backend:
+    build:
+      context: ./ # Path to the backend code
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+    depends_on:
+      - database # Ensure the database service is started first
+    # restart: unless-stoped
