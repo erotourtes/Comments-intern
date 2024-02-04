@@ -1,8 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { CreateAttachmentDto } from './dto/create-attachment.dto';
 import { UpdateAttachmentDto } from './dto/update-attachment.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { ImageProcessorService } from '../image-processor/image-processor.service';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AttachmentsService {
@@ -11,7 +16,9 @@ export class AttachmentsService {
     private readonly imageService: ImageProcessorService,
   ) {}
 
-  async create(createAttachmentDto: CreateAttachmentDto) {
+  async create(createAttachmentDto: CreateAttachmentDto, user: User) {
+    await this.checkIfExecutorIsAuthorOfPost(createAttachmentDto.postId, user);
+
     if (createAttachmentDto.format === 'text')
       return await this.createText(createAttachmentDto);
     else return await this.createImage(createAttachmentDto);
@@ -34,6 +41,17 @@ export class AttachmentsService {
   async remove(id: number) {
     await this.prisma.attachment.delete({ where: { id: id } });
     return {};
+  }
+
+  async checkAuthor(attachmentId: number, user: User) {
+    const attachment = await this.prisma.attachment.findUnique({
+      where: { id: attachmentId },
+      include: { post: true },
+    });
+
+    if (!attachment) throw new BadRequestException('Attachment not found');
+    if (attachment.post.authorId !== user.id)
+      throw new ForbiddenException('Not your attachment');
   }
 
   private async updateText(
@@ -117,5 +135,14 @@ export class AttachmentsService {
       });
 
     return { size, format, imgBuffer };
+  }
+
+  private async checkIfExecutorIsAuthorOfPost(postId: number, user: User) {
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+    });
+    if (!post) throw new BadRequestException('Post not found');
+    if (post.authorId !== user.id)
+      throw new ForbiddenException('Not your post');
   }
 }
