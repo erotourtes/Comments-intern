@@ -8,6 +8,10 @@ const config = {
   xhtml: {
     validTags: ['a', 'code', 'i', 'strong'],
   },
+  pagination: {
+    take: 25,
+    sort: 'desc' as const,
+  },
 };
 
 export default Object.freeze(config);

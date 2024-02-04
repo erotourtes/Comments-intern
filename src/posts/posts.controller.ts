@@ -7,10 +7,13 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import config from '../../config';
+import { ParseOrderPipe } from '../utils/ParseOrderPipe';
 
 @Controller('posts')
 export class PostsController {
@@ -24,6 +27,15 @@ export class PostsController {
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.postsService.findOne(id);
+  }
+
+  @Get('page/:page')
+  getPostsPage(
+    @Param('page', ParseIntPipe) page: number,
+    @Query('take', ParseIntPipe) take: number = config.pagination.take,
+    @Query('order', ParseOrderPipe) order: 'asc' | 'desc',
+  ) {
+    return this.postsService.findPage(page, take, order);
   }
 
   @Patch(':id')

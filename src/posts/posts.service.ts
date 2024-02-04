@@ -39,4 +39,16 @@ export class PostsService {
       where: { id },
     });
   }
+
+  async findPage(page: number, perPage: number, order: 'asc' | 'desc') {
+    const posts = await this.prisma.post.findMany({
+      skip: (page - 1) * perPage,
+      take: perPage,
+      orderBy: {
+        createdAt: order,
+      },
+    });
+
+    return posts;
+  }
 }
