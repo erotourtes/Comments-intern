@@ -3,11 +3,15 @@ import { UsersModule } from './users/users.module';
 import { PostsModule } from './posts/posts.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AttachmentsModule } from './attachments/attachments.module';
-import { ImageProcessorService } from './image-processor/image-processor.service';
-import { PrismaService } from './prisma/prisma.service';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [UsersModule, PostsModule, PrismaModule, AttachmentsModule],
-  providers: [ImageProcessorService, PrismaService],
+  imports: [
+    PrismaModule,
+    UsersModule,
+    PostsModule,
+    AttachmentsModule,
+    AuthModule,
+  ],
 })
 export class AppModule {}
