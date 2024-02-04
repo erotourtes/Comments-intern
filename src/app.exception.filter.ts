@@ -5,15 +5,20 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { LoggerService } from './logger/logger.service';
 
 @Catch()
 export class UnhandledExceptionFilter<T> implements ExceptionFilter {
+  logger = LoggerService.withContext(UnhandledExceptionFilter);
+
   catch(exception: T, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
     const errorMessage = 'Internal server error. Please try again later.';
+
+    this.logger.error(errorMessage, exception['stack']);
 
     response.status(400).json({
       error: errorMessage,

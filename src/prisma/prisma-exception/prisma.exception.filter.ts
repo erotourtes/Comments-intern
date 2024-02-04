@@ -1,6 +1,7 @@
 import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Request, Response } from 'express';
+import { LoggerService } from '../../logger/logger.service';
 
 type CodeError = {
   [key in Prisma.PrismaClientKnownRequestError['code']]: (
@@ -22,6 +23,8 @@ export class PrismaExceptionFilter<
   T extends Prisma.PrismaClientKnownRequestError,
 > implements ExceptionFilter
 {
+  logger = LoggerService.withContext(PrismaExceptionFilter);
+
   catch(exception: T, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -29,6 +32,8 @@ export class PrismaExceptionFilter<
 
     const errorMessageProvider = codeError[exception.code] || codeError.default;
     const errorMessage = errorMessageProvider(exception);
+
+    this.logger.error(errorMessage, exception.stack);
 
     response.status(400).json({
       error: `Database error: ${errorMessage}`,
