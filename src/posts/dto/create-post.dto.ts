@@ -1,4 +1,4 @@
-import { IsString, MaxLength, MinLength } from 'class-validator';
+import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class CreatePostDto {
   @IsString()
@@ -10,6 +10,7 @@ export class CreatePostDto {
   @MaxLength(65_535)
   content: string;
 
+  @IsOptional()
   @IsString()
   @MaxLength(191)
   homepageUrl?: string;
