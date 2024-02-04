@@ -45,6 +45,6 @@ export class UsersController {
   @UseGuards(AuthGuard)
   async remove(@Param('id', ParseIntPipe) id: number, @user() user: User) {
     this.usersService.restrictToSameUser(user, id);
-    return await this.usersService.remove(id, user);
+    return await this.usersService.remove(id);
   }
 }

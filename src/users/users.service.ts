@@ -1,7 +1,7 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -30,6 +30,8 @@ export class UsersService {
       where: { id },
     });
 
+    if (!user) throw new BadRequestException('User not found');
+
     return excludePassword(user);
   }
 
@@ -40,6 +42,8 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({
       where: { username },
     });
+
+    if (!user) throw new BadRequestException('User not found');
 
     return includePassword ? user : excludePassword(user);
   }
@@ -53,9 +57,7 @@ export class UsersService {
     return excludePassword(user);
   }
 
-  async remove(id: number, executor: User) {
-    if (id !== executor.id)
-      throw new ForbiddenException('You can only delete your own account');
+  async remove(id: number) {
     await this.prisma.user.delete({
       where: { id },
     });
