@@ -5,8 +5,9 @@ export class LoggerService {
   private _context = '';
   private logger = new ConsoleLogger();
 
-  debug(message: string) {
-    this.logger.debug(message, this._context);
+  debug(...message: any[]) {
+    const msg = message.join(' ');
+    this.logger.debug(msg, this._context);
   }
 
   log(message: string) {

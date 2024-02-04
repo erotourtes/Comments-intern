@@ -24,3 +24,11 @@ Content-Type: application/json
 ###
 
 DELETE http://localhost:3000/users/1
+
+###
+
+curl 
+    -v 
+    --cookie "jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzA3MDU5ODQ2LCJleHAiOjE3MDc2NjQ2NDZ9.jfiEbB3tk2KduaKR64hi1xyIbtfAHxyX1pJ-2Rv70Zo" 
+    -X DELETE
+    http://localhost:3000/users/2

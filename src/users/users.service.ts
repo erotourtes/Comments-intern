@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { hashPassword } from '../utils/hash';
 import { excludePassword } from '../utils/excludePassword';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -28,7 +29,10 @@ export class UsersService {
     return excludePassword(user);
   }
 
-  async findByUsername(username: string, includePassword = false) {
+  async findByUsername(
+    username: string,
+    includePassword = false,
+  ): Promise<User | Omit<User, 'password'>> {
     const user = await this.prisma.user.findUnique({
       where: { username },
     });
@@ -45,7 +49,9 @@ export class UsersService {
     return excludePassword(user);
   }
 
-  async remove(id: number) {
+  async remove(id: number, executor: User) {
+    if (id !== executor.id)
+      throw new ForbiddenException('You can only delete your own account');
     await this.prisma.user.delete({
       where: { id },
     });

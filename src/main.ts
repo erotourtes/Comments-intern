@@ -6,6 +6,7 @@ import {
   UnhandledExceptionFilter,
 } from './app.exception.filter';
 import { PrismaExceptionFilter } from './prisma/prisma-exception/prisma.exception.filter';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,6 +16,7 @@ async function bootstrap() {
     new HttpExceptionFilter(),
     new PrismaExceptionFilter(),
   );
+  app.use(cookieParser());
   await app.listen(3000);
 }
 bootstrap();
