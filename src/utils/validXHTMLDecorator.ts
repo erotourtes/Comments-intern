@@ -1,26 +1,39 @@
 import { ValidationOptions, registerDecorator } from 'class-validator';
-
 import config from '../../config';
-import * as htmlLint from 'html5-lint';
 
-type message = {
-  type: string;
+const exctractNameFromTag = (tag: string): string => {
+  let name = '';
+  for (let i = 1; i < tag.length - 1; i++) {
+    if (tag[i] === ' ') break;
+    name += tag[i];
+  }
+
+  return name;
 };
 
-const validateHTMLNode = async (content: string, allowedTags: string[]) => {
-  return new Promise((resolve, reject) => {
-    htmlLint(content, (err, results) => {
-      const errors = (results.messages as message[]).filter(
-        (message) => message.type === 'error',
-      ).length;
+// TODO: add validation for attributes
+const isValid = (html: string, allowedTags: string[] = []): boolean => {
+  const tags = html.match(/<[^>]*>/g);
+  const tagNames: string[] = tags?.map(exctractNameFromTag) || [];
+  const stack: string[] = [];
 
-      console.log('errors', errors);
+  for (const tag of tagNames) {
+    const isOpenningTag = tag[0] !== '/';
+    const tagName = !isOpenningTag ? tag.slice(1) : tag;
 
-      if (err) reject("Can't validate HTML.");
-      else if (errors > 0) reject('HTML is not valid.');
-      else resolve(results);
-    });
-  });
+    if (!allowedTags.includes(tagName)) return false;
+
+    if (isOpenningTag) {
+      stack.push(tagName);
+    } else {
+      const lastTag = stack.pop();
+      if (lastTag !== tagName) {
+        return false;
+      }
+    }
+  }
+
+  return stack.length === 0;
 };
 
 export function IsValidXHTML(validationOptions?: ValidationOptions) {
@@ -32,20 +45,7 @@ export function IsValidXHTML(validationOptions?: ValidationOptions) {
       options: validationOptions,
       validator: {
         validate(value: any) {
-          const fullDocument = `
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-              <title>Page Title</title>
-          </head>
-          <body>
-          ${value}
-          </body>
-          </html>
-            `;
-          return validateHTMLNode(fullDocument, config.xhtml.validTags)
-            .then(() => true)
-            .catch(() => false);
+          return isValid(value, config.xhtml.validTags);
         },
       },
     });
