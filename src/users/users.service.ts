@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -55,5 +59,10 @@ export class UsersService {
     await this.prisma.user.delete({
       where: { id },
     });
+  }
+
+  restrictToSameUser(executor: User, id: number) {
+    if (executor.id !== id)
+      throw new ForbiddenException('You are not allowd to change other user');
   }
 }
