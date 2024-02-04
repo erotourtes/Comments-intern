@@ -17,3 +17,9 @@ Dedicated `.sql` file is in `./database/generated.sql`
 7. Docker with docker-compose
 
 I've tried to host on a free Amazon EC2 instance. However, it seems not to have enough resources to operate.
+
+## Steps to Run
+
+1. rename .example.env to .env
+2. run `docker-compose up --build`
+3. test `http://localhost:3000/users/1` should give "User not found" message
