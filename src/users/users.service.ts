@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { hashPassword } from '../utils/hash';
+import { exclude } from '../utils/excludePassword';
 
 @Injectable()
 export class UsersService {
@@ -9,10 +11,13 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     const user = await this.prisma.user.create({
-      data: createUserDto,
+      data: {
+        ...createUserDto,
+        password: await hashPassword(createUserDto.password),
+      },
     });
 
-    return user;
+    return this.excludePassword(user);
   }
 
   async findOne(id: number) {
@@ -20,15 +25,15 @@ export class UsersService {
       where: { id },
     });
 
-    return user;
+    return this.excludePassword(user);
   }
 
-  async findByEmail(email: string) {
+  async findByUsername(username: string, includePassword = false) {
     const user = await this.prisma.user.findUnique({
-      where: { email },
+      where: { username },
     });
 
-    return user;
+    return includePassword ? user : this.excludePassword(user);
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
@@ -37,12 +42,16 @@ export class UsersService {
       data: updateUserDto,
     });
 
-    return user;
+    return this.excludePassword(user);
   }
 
   async remove(id: number) {
     await this.prisma.user.delete({
       where: { id },
     });
+  }
+
+  private excludePassword(user: any) {
+    return exclude(user, ['password']);
   }
 }
