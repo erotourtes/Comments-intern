@@ -3,7 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { hashPassword } from '../utils/hash';
-import { exclude } from '../utils/excludePassword';
+import { excludePassword } from '../utils/excludePassword';
 
 @Injectable()
 export class UsersService {
@@ -17,7 +17,7 @@ export class UsersService {
       },
     });
 
-    return this.excludePassword(user);
+    return excludePassword(user);
   }
 
   async findOne(id: number) {
@@ -25,7 +25,7 @@ export class UsersService {
       where: { id },
     });
 
-    return this.excludePassword(user);
+    return excludePassword(user);
   }
 
   async findByUsername(username: string, includePassword = false) {
@@ -33,7 +33,7 @@ export class UsersService {
       where: { username },
     });
 
-    return includePassword ? user : this.excludePassword(user);
+    return includePassword ? user : excludePassword(user);
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
@@ -42,16 +42,12 @@ export class UsersService {
       data: updateUserDto,
     });
 
-    return this.excludePassword(user);
+    return excludePassword(user);
   }
 
   async remove(id: number) {
     await this.prisma.user.delete({
       where: { id },
     });
-  }
-
-  private excludePassword(user: any) {
-    return exclude(user, ['password']);
   }
 }
