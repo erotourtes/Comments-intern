@@ -3,3 +3,19 @@ GET http://localhost:3000/posts/page/1?take=2
 ###
 
 GET http://localhost:3000/posts/page/3?take=3&order=desc
+
+###
+
+curl 
+    -X POST
+    -H "Content-Type: application/json"
+    -d '{"title": "New Post", "content": "New Content"}' 
+    http://localhost:3000/posts 
+
+###
+
+curl 
+    -X PATCH  
+    -H "Content-Type: application/json"
+    -d '{"title": "Another New Post", "content": "Another New Content"}'
+    http://localhost:3000/posts/10
