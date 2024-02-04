@@ -1,4 +1,4 @@
-import { IsNumber, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsString, MaxLength, MinLength } from 'class-validator';
 
 export class CreatePostDto {
   @IsString()
@@ -13,7 +13,4 @@ export class CreatePostDto {
   @IsString()
   @MaxLength(191)
   homepageUrl?: string;
-
-  @IsNumber()
-  authorId: number;
 }

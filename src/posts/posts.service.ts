@@ -1,15 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Post, User } from '@prisma/client';
 
 @Injectable()
 export class PostsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createPostDto: CreatePostDto) {
+  async create(createPostDto: CreatePostDto, user: User) {
     const post = await this.prisma.post.create({
-      data: createPostDto,
+      data: {
+        ...createPostDto,
+        authorId: user.id,
+      },
     });
 
     return post;
@@ -23,21 +31,29 @@ export class PostsService {
     return post;
   }
 
-  async update(id: number, updatePostDto: UpdatePostDto) {
-    const post = await this.prisma.post.update({
+  async update(id: number, updatePostDto: UpdatePostDto, user: User) {
+    const post = await this.getPost(id);
+    this.checkAuthor(post, user);
+
+    const updated = await this.prisma.post.update({
       where: { id },
       data: {
         ...updatePostDto,
       },
     });
 
-    return post;
+    return updated;
   }
 
-  remove(id: number) {
-    this.prisma.post.delete({
+  async remove(id: number, user: User) {
+    const post = await this.getPost(id);
+    this.checkAuthor(post, user);
+
+    await this.prisma.post.delete({
       where: { id },
     });
+
+    return {};
   }
 
   async findPage(page: number, perPage: number, order: 'asc' | 'desc') {
@@ -50,5 +66,18 @@ export class PostsService {
     });
 
     return posts;
+  }
+
+  private async getPost(id: number) {
+    const post = await this.prisma.post.findUnique({
+      where: { id },
+    });
+    if (!post) throw new NotFoundException('Post not found');
+    return post;
+  }
+
+  private checkAuthor(post: Post, user: User) {
+    if (post.authorId !== user.id)
+      throw new ForbiddenException('You are not the author of this post');
   }
 }

@@ -8,20 +8,25 @@ import {
   Delete,
   ParseIntPipe,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import config from '../../config';
 import { ParseOrderPipe } from '../utils/ParseOrderPipe';
+import { AuthGuard } from '../auth/auth.guard';
+import { user } from '../auth/user.decorator';
+import { User } from '@prisma/client';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Post()
-  create(@Body() createPostDto: CreatePostDto) {
-    return this.postsService.create(createPostDto);
+  @UseGuards(AuthGuard)
+  create(@Body() createPostDto: CreatePostDto, @user() user: User) {
+    return this.postsService.create(createPostDto, user);
   }
 
   @Get(':id')
@@ -39,15 +44,18 @@ export class PostsController {
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuard)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updatePostDto: UpdatePostDto,
+    @user() user: User,
   ) {
-    return this.postsService.update(id, updatePostDto);
+    return this.postsService.update(id, updatePostDto, user);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.postsService.remove(id);
+  @UseGuards(AuthGuard)
+  remove(@Param('id', ParseIntPipe) id: number, @user() user: User) {
+    return this.postsService.remove(id, user);
   }
 }
